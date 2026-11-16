@@ -434,6 +434,85 @@ Points Plot::append(const p_t p) const {
   return tmp;
 }
 
+struct Mtxs
+{
+  size_t k;
+  Mtx* mtxs;
+  Mtxs();
+  Mtxs(const Mtxs& oth);
+  Mtxs(Mtxs&& oth) noexcept;
+  Mtxs& operator=(const Mtxs& oth);
+  Mtxs& operator=(Mtxs&& oth) noexcept;
+  ~Mtxs();
+};
+
+Mtxs::Mtxs():
+  k(0),
+  mtxs(nullptr)
+{}
+
+Mtxs::Mtxs(const Mtxs& oth):
+  k(oth.k),
+  mtxs(new Mtx[oth.k])
+{
+  try {
+    for (size_t i = 0; i < k; ++i) {
+      mtxs[i] = oth.mtxs[i];
+    }
+  }
+  catch (...) {
+    delete[] mtxs;
+    throw;
+  }
+}
+
+Mtxs::Mtxs(Mtxs&& oth) noexcept:
+  k(oth.k),
+  mtxs(oth.mtxs)
+{
+  oth.k = 0;
+  oth.mtxs = nullptr;
+}
+
+Mtxs& Mtxs::operator=(const Mtxs& oth)
+{
+  if (this == &oth) {
+    return *this;
+  }
+  Mtx* tmp = new Mtx[oth.k];
+  try {
+    for (size_t i = 0; i < oth.k; ++i) {
+      tmp[i] = oth.mtxs[i];
+    }
+  }
+  catch (...) {
+    delete[] tmp;
+    throw;
+  }
+  delete[] mtxs;
+  mtxs = tmp;
+  k = oth.k;
+  return *this;
+}
+
+Mtxs& Mtxs::operator=(Mtxs&& oth) noexcept
+{
+  if (this == &oth) {
+    return *this;
+  }
+  delete[] mtxs;
+  k = oth.k;
+  mtxs = oth.mtxs;
+  oth.k = 0;
+  oth.mtxs = nullptr;
+  return *this;
+}
+
+Mtxs::~Mtxs()
+{
+  delete[] mtxs;
+}
+
 int main() {
   int arr[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   Ints a(arr, 9);
