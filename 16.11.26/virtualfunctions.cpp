@@ -1,4 +1,6 @@
 #include <iostream>
+#include <limits>
+#include <stdexcept>
 
 namespace
 {
@@ -40,7 +42,7 @@ namespace
     
     virtual std::ostream& info(std::ostream& out) override
     {
-      out << "Point";
+      return out << "Point";
     }
 
     virtual int x() const override
@@ -70,7 +72,7 @@ namespace
 
     virtual std::ostream& info(std::ostream& out) override
     {
-      out << "Vector";
+      return out << "Vector";
     }
 
     virtual int x() const override
@@ -100,7 +102,7 @@ namespace
 
     virtual std::ostream& info(std::ostream& out) override
     {
-      out << "ColoredPoint";
+      return out << "ColoredPoint";
     }
 
     virtual int x() const override
@@ -148,6 +150,97 @@ namespace
     Color cl_;
   };
 }
+
+class Circle : public Planar
+{
+public:
+  static constexpr double pi = 3.14;
+
+  Circle(Point c, int r):
+  c_(c),
+  r_(r)
+  {}
+  
+  virtual ~Circle() = default;
+
+  virtual std::ostream& info(std::ostream& out) override
+    {
+      return out << "Circle";
+    }
+
+  virtual int x() const override
+  {
+    return c_.x();
+  }
+  virtual int y() const override
+  {
+    return c_.y();
+  }
+  virtual int abs_sqr() const override
+  {
+    if (r_ > std::numeric_limits< int >::max() / r_) {
+      throw std::overflow_error("overflow error");
+    }
+    return r_ * r_;
+  }
+  double sqr()
+  {
+    return pi * abs_sqr();
+  }
+  void move(Point p)
+  {
+    c_ = p; 
+  }
+  void resize(int r)
+  {
+    r_ = r;
+  }
+
+private:
+  Point c_;
+  int r_;
+};
+
+class ColoredCircle : public Planar, public Colored
+{
+public:
+  ColoredCircle(Circle cir, Color cl):
+    cir_(cir),
+    cl_(cl)
+  {}
+  virtual ~ColoredCircle() = default;
+
+  virtual std::ostream& info(std::ostream& out) override
+  {
+    return out << "ColoredCircle";
+  }
+  virtual int x() const override
+  {
+    return cir_.x();
+  }
+  virtual int y() const override
+  {
+    return cir_.y();
+  }
+  virtual int abs_sqr() const override
+  {
+    return cir_.abs_sqr();
+  }
+  virtual Color getColor() const override
+  {
+    return cl_;
+  }
+  virtual void setColor(Color color) override
+  {
+    cl_ = color;
+  }
+   
+
+
+private:
+  Circle cir_;
+  Color cl_;
+};
 
 std::ostream& print_abs_sqr(std::ostream& out, Planar* pl)
 {
